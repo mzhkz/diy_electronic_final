@@ -86,13 +86,18 @@ def get_app_notifs(apps):
 
 
 def main():
-    SERIAL_CODE = "COM3"
+    # SERIAL_CODE = "COM3"
+    SERIAL_CODE = "/dev/cu.usbmodem142301"
     DETECT_APPS = ["jp.naver.line.mac"]
+    THRESHOLD = 50
+
+    new_notif_count = 0
 
     notifis_catch = get_app_notifs(DETECT_APPS);
     notifis_index = len(notifis_catch)
 
-    # ser = serial.Serial(SERIAL_CODE, 115200, timeout = 0.3)
+    ser = serial.Serial(SERIAL_CODE, 115200, timeout = 0.3)
+    ser.write("{value}".format(value = 0).encode("utf-8"))
     time.sleep(2)
 
     while True:
@@ -103,9 +108,12 @@ def main():
         reserve_notifs_size = len(notifis_now) - len(notifis_catch)
         print("{opecode} {operand}".format(opecode = "INC", operand=reserve_notifs_size))
         if (reserve_notifs_size > 0):
-            pass
+            new_notif_count += reserve_notifs_size
             # print(" received -> {0}".format(ser.readline().decode('utf-8')))
-            # ser.write("{opecode} {operand}".format(opecode = "INC", operand=reserve_notifs_size).encode("utf-8"))
+            brightness = 255 * (float(new_notif_count) / float(THRESHOLD))
+            print(brightness)
+            brightness = 255 if brightness > 255 else brightness
+            ser.write("{value}".format(value = brightness).encode("utf-8"))
         notifis_catch = notifis_now
         time.sleep(1)
 if __name__ == "__main__":
