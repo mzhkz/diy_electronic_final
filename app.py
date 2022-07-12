@@ -106,13 +106,18 @@ def main():
             print(notif)
         notifis_index = len(notifis_now)
         reserve_notifs_size = len(notifis_now) - len(notifis_catch)
+        if reserve_notifs_size < 0:
+            notifis_catch = []
+            ser.write("{value}".format(value = 0).encode("utf-8"));
+            print("delete all")
+            continue
         print("{opecode} {operand}".format(opecode = "INC", operand=reserve_notifs_size))
         if (reserve_notifs_size > 0):
             new_notif_count += reserve_notifs_size
             # print(" received -> {0}".format(ser.readline().decode('utf-8')))
-            brightness = 255 * (float(new_notif_count) / float(THRESHOLD))
+            brightness = (float(new_notif_count) / float(THRESHOLD)) * 100.0
             print(brightness)
-            brightness = 255 if brightness > 255 else brightness
+            brightness = 100 if brightness > 100 else brightness
             ser.write("{value}".format(value = brightness).encode("utf-8"))
         notifis_catch = notifis_now
         time.sleep(1)

@@ -15,6 +15,7 @@ int ticks = 0;
 int LED_RED = 0;
 int LED_GREEN = 255;
 int LED_BLUE = 255;
+int brightness = 0;
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -32,11 +33,23 @@ void loop() {
   if (Serial.available() > 0){
     strip.clear();
     String data = Serial.readString();
-    int brightness = data.toInt();
-    for (int i = 0; i < LED_COUNT; i++) {
-        strip.setPixelColor(i, strip.Color(LED_RED, LED_GREEN, LED_BLUE));
+    int current = data.toInt();
+    int diff = current - brightness;
+    int is_up = diff > 0;
+    int sgn = 1;
+    if (!is_up) {
+      sgn = -1;
+      diff *= -1;
     }
-    strip.setBrightness(brightness);
-    strip.show();
+
+     for (int i = 0; i < diff; i++) {
+        for (int j = 0; j < LED_COUNT; j++) {
+          strip.setPixelColor(j, strip.Color(LED_RED, LED_GREEN, LED_BLUE));
+        }
+        strip.setBrightness(brightness + sgn * i); // Set BRIGHTNESS to about 1/5 (max = 255)
+        delay(50);
+        strip.show();
+    }
+    brightness = current;
   }
 }
